@@ -5,6 +5,8 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
+#include "Shader.h"
+
 // Window demensions
 const GLint WIDTH = 800, HEIGHT = 600;
 
@@ -41,10 +43,13 @@ int main() {
 
 	glViewport(0, 0, screenWidht, screenHeight);
 
+	Shader ourShader("resources/shaders/core.vs", "resources/shaders/core-frag.vs");
+
 	GLfloat vertices[] = {
-		-0.5f, -0.5f, 0.0f, //bottom left
-		0.5f, -0.5f, 0.0f,
-		0.0f, 0.5, 0.0f
+		// Position				// Color
+		-0.5f, -0.5f, 0.0f,		1.0f, 0.0f, 0.0f,  // bottom left
+		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f, // bottom right
+		0.0f, 0.5, 0.0f,		0.0f, 0.0f, 1.0f // middle top
 	};
 
 	GLuint VBO, VAO;
@@ -55,10 +60,12 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *) 0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *) (3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
 	glBindVertexArray(0);
 
 	//Game Loop
@@ -71,7 +78,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Render OpenGL
-		glUseProgram(shaderProgram);
+		ourShader.Use();
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
