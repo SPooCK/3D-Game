@@ -8,20 +8,6 @@
 // Window demensions
 const GLint WIDTH = 800, HEIGHT = 600;
 
-const GLchar *vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 position;\n"
-"void main()\n"
-"{\n"
-"gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-"}";
-
-const GLchar *fragmentShaderSource = "#version 330 core\n"
-"out vec4 color;\n"
-"void main( )\n"
-"{\n"
-"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}";
-
 // The MIAN function, from here we start the application and run the game loop
 int main() {
 	glfwInit();
@@ -55,43 +41,6 @@ int main() {
 
 	glViewport(0, 0, screenWidht, screenHeight);
 
-	GLuint vertextShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertextShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertextShader);
-
-	GLint success; GLchar infoLog[512];
-
-	glGetShaderiv(vertextShader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(vertextShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER:VERTEXT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER:FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertextShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER:PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	glDeleteShader(vertextShader); glDeleteShader(fragmentShader);
-
 	GLfloat vertices[] = {
 		-0.5f, -0.5f, 0.0f, //bottom left
 		0.5f, -0.5f, 0.0f,
@@ -121,7 +70,7 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Render OpenGL 3
+		// Render OpenGL
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
