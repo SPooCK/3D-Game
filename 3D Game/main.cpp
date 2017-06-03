@@ -4,7 +4,9 @@
 #include <GL/glew.h>
 // GLFW
 #include <GLFW/glfw3.h>
-
+// SOIL2
+#include "SOIL2/SOIL2.h"
+// Ohter includes
 #include "Shader.h"
 
 // Window demensions
