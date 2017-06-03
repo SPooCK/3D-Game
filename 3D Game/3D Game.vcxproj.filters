@@ -91,10 +91,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\core.vs">
+    <None Include="res\shaders\core.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resources\shaders\core-frag.vs">
+    <None Include="res\shaders\core.vs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
