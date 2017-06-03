@@ -6,11 +6,17 @@
 #include <GLFW/glfw3.h>
 // SOIL2
 #include "SOIL2/SOIL2.h"
+// GLM
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 // Ohter includes
 #include "Shader.h"
 
 // Window demensions
 const GLint WIDTH = 800, HEIGHT = 600;
+
+using namespace glm;
 
 // The MIAN function, from here we start the application and run the game loop
 int main() {
@@ -53,10 +59,10 @@ int main() {
 
 	GLfloat vertices[] = {
 		// Position			// Color			// Texture Coordinates
-		0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	1.0f, 1.0f, // Top Right
+		0.5f, 1.0f, 0.0f,	1.0f, 0.0f, 0.0f,	1.0f, 1.0f, // Top Right
 		0.5f, -0.5f, 0.0f,	1.0f, 1.0f, 1.0f,	1.0f, 0.0f, // Bottom Right
 		-0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 0.0f, // Bottom Left
-		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 1.0f,	0.0f, 1.0f  // Top Left
+		-0.5f, 1.0f, 0.0f,	1.0f, 0.0f, 1.0f,	0.0f, 1.0f  // Top Left
 	};
 
 	GLuint indices[] = {
@@ -117,6 +123,15 @@ int main() {
 		// Render OpenGL
 		ourShader.Use();
 
+		// Rotate
+		mat4 transform;
+		transform = translate(transform, vec3(0.5f, -0.5f, 0.0f));
+		transform = rotate(transform, (GLfloat)glfwGetTime() * -5.0f, vec3(0.0f, 0.0f, 1.0f));
+
+		GLint transformLocation = glGetUniformLocation(ourShader.Program, "transform");
+		glUniformMatrix4fv(transformLocation, 1, GL_FALSE,  value_ptr(transform));
+
+		// Render
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture"), 0);
