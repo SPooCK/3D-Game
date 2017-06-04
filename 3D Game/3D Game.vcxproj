@@ -170,8 +170,10 @@
     <ClInclude Include="SOIL2\stb_image_write.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\core.frag" />
-    <None Include="res\shaders\core.vs" />
+    <None Include="res\shaders\lamp.frag" />
+    <None Include="res\shaders\lamp.vs" />
+    <None Include="res\shaders\lighting.frag" />
+    <None Include="res\shaders\lighting.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
