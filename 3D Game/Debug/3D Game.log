@@ -1,10 +1,10 @@
 ﻿  main.cpp
-d:\programs\vs projects\3d-game\3d game\main.cpp(176): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(290): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(291): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(295): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(296): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(298): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(299): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(180): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(294): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(295): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(299): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(300): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(302): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(303): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
   3D Game.vcxproj -> D:\Programs\VS Projects\3D-Game\Debug\3D Game.exe
   3D Game.vcxproj -> D:\Programs\VS Projects\3D-Game\Debug\3D Game.pdb (Partial PDB)
