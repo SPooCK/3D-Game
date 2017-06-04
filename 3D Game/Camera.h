@@ -112,4 +112,33 @@ public:
 	GLfloat GetZoom() {
 		return this->zoom;
 	}
+private:
+	// Camera Attributes
+	vec3 position;
+	vec3 front;
+	vec3 up;
+	vec3 right;
+	vec3 worldUp;
+
+	// Eular Angles
+	GLfloat yaw;
+	GLfloat pitch;
+
+	// Camera options
+	GLfloat movementSpeed;
+	GLfloat mouseSensitivity;
+	GLfloat zoom;
+
+	// Calculates the front vector from the Camera's Eular Angles
+	void updateCameraVectors() {
+		// Calculate the new Front vector
+		vec3 front;
+		front.x = cos(radians(this->yaw)) * cos(radians(this->pitch));
+		front.y = sin(radians(this->pitch));
+		front.z = sin(radians(this->yaw)) * cos(radians(this->pitch));
+		// Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement
+		this->front = normalize(front);
+		this->right = normalize(cross(this->front, this->worldUp));
+		this->up = normalize(cross(this->right, this->front));
+	}
 };
