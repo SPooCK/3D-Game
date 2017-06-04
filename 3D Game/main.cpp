@@ -12,11 +12,29 @@
 #include <gtc/type_ptr.hpp>
 // Ohter includes
 #include "Shader.h"
+#include "Camera.h"
+
+using namespace glm;
 
 // Window demensions
 const GLint WIDTH = 800, HEIGHT = 600;
+int SCREEN_WIDTH, SCREEN_HEIGHT;
 
-using namespace glm;
+// Function prototypes
+void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void ScrollCallback(GLFWwindow *window, double xOffset, double yOffset);
+void MouseCallback(GLFWwindow *window, double xPos, double yPos);
+void DoMovement();
+
+// Camera
+Camera camera(vec3(0.0f, 0.0f, 3.0f));
+GLfloat lastX = WIDTH / 2.0f;
+GLfloat lastY = WIDTH / 2.0f;
+bool keys[1024];
+bool firstMouse = true;
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
 
 // The MIAN function, from here we start the application and run the game loop
 int main() {
@@ -30,9 +48,6 @@ int main() {
 
 	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "3D Game", nullptr, nullptr);
 
-	int screenWidht, screenHeight;
-	glfwGetFramebufferSize(window, &screenWidht, &screenHeight);
-
 	if (nullptr == window) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -41,15 +56,25 @@ int main() {
 	}
 
 	glfwMakeContextCurrent(window);
-	glewExperimental = GL_TRUE;
+	glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
 
+	// Set the required callback functions
+	glfwSetKeyCallback(window, KeyCallback);
+	glfwSetCursorPosCallback(window, MouseCallback);
+	glfwSetScrollCallback(window, ScrollCallback);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
+	glewExperimental = GL_TRUE;
+	// Initialize GLEW to setup the OpenGL Function pointers
 	if (GLEW_OK != glewInit()) {
 		std::cout << "Failed to initialise GLEW" << std::endl;
 		
 		return EXIT_FAILURE;
 	}
 
-	glViewport(0, 0, screenWidht, screenHeight);
+	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -59,7 +84,6 @@ int main() {
 	Shader ourShader("res/shaders/core.vs", "res/shaders/core.frag");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
-	// Use with Perspective Projection
 	GLfloat vertices[] = {
 		// X, Y, Z			//Texture Coord
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -104,6 +128,19 @@ int main() {
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
+	
+	vec3 cubePositions[] = {
+		vec3(0.0f, 0.0f, 0.0f),
+		vec3(2.0f, 5.0f, -15.0f),
+		vec3(-1.5f, -2.2f, -2.5f),
+		vec3(-3.8f, -2.0f, -12.3f),
+		vec3(2.4f, -0.4f, -3.5f),
+		vec3(-1.7f, 3.0f, -7.5f),
+		vec3(1.3f, -2.0f, -2.5f),
+		vec3(1.5f, 2.0f, -2.5f),
+		vec3(1.5f, 0.2f, -1.5f),
+		vec3(-1.3f, 1.0f, -1.5f)
+	};
 
 	GLuint VBO, VAO;
 	glGenVertexArrays(1, &VAO);
@@ -139,14 +176,16 @@ int main() {
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// Prokection Matrix
-	mat4 projection;
-	projection = perspective(45.0f, (GLfloat)screenWidht / (GLfloat)screenHeight, 0.1f, 1000.0f);
-
 	//Game Loop
 	while (!glfwWindowShouldClose(window)) {
-		// Check if any events have been activated (key pressed, mouse move etc.)
+		// Set frame time
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		// Check and call events
 		glfwPollEvents();
+		DoMovement();
 
 		// Render and CLear the colorbuffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -159,20 +198,30 @@ int main() {
 		// Render OpenGL
 		ourShader.Use();
 		
+		mat4 projection = perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
+
 		mat4 model; mat4 view;
-		model = rotate(model, (GLfloat)glfwGetTime() * 1.0f, vec3(0.5f, 1.0f, 0.0f));
-		view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+		view = camera.GetViewMatrix();
 
 		GLint modelLoc = glGetUniformLocation(ourShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(ourShader.Program, "view");
 		GLint projLoc = glGetUniformLocation(ourShader.Program, "projection");
 		
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
 
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		for (GLuint i = 0; i < 10; i++) {
+			mat4 model;
+			model = translate(model, cubePositions[i]);
+			GLfloat angle = 20.0f * i;
+			model = rotate(model, angle, vec3(1.0f, 0.3f, 0.5f));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
 		glBindVertexArray(0);
 
 		// Sawp the screen buffers
@@ -185,4 +234,58 @@ int main() {
 	// Terminate GLWF, clearing any resources allocated by GLFW
 	glfwTerminate();
 	return EXIT_SUCCESS;
+}
+
+// Moves/alters the camera positions based on user input
+void DoMovement() {
+	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP]) {
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	}
+
+	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN]) {
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	}
+
+	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT]) {
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	}
+
+	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT]) {
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+	}
+}
+
+// Is called whenever a key is pressed/released via GLFW
+void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode) {
+	if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action) {
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+
+	if (key >= 0 && key < 1024) {
+		if (GLFW_PRESS == action) {
+			keys[key] = true;
+		} else if (GLFW_RELEASE == action) {
+			keys[key] = false;
+		}
+	}
+}
+
+void MouseCallback(GLFWwindow *window, double xPos, double yPos) {
+	if (firstMouse) {
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+	}
+
+	GLfloat xOffset = xPos - lastX;
+	GLfloat yOffset = lastY - yPos;
+
+	lastX = xPos;
+	lastY = yPos;
+
+	camera.ProcessMouseMovement(xOffset, yOffset);
+}
+
+void ScrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
+	camera.ProcessMouseScroll(yOffset);
 }
