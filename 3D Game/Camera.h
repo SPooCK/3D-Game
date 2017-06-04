@@ -112,6 +112,10 @@ public:
 	GLfloat GetZoom() {
 		return this->zoom;
 	}
+
+	vec3 GetPosition() {
+		return this->position;
+	}
 private:
 	// Camera Attributes
 	vec3 position;
