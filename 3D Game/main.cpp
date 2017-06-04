@@ -22,7 +22,6 @@ int SCREEN_WIDTH, SCREEN_HEIGHT;
 
 // Function prototypes
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
-void ScrollCallback(GLFWwindow *window, double xOffset, double yOffset);
 void MouseCallback(GLFWwindow *window, double xPos, double yPos);
 void DoMovement();
 
@@ -61,7 +60,6 @@ int main() {
 	// Set the required callback functions
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetCursorPosCallback(window, MouseCallback);
-	glfwSetScrollCallback(window, ScrollCallback);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -284,8 +282,4 @@ void MouseCallback(GLFWwindow *window, double xPos, double yPos) {
 	lastY = yPos;
 
 	camera.ProcessMouseMovement(xOffset, yOffset);
-}
-
-void ScrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
-	camera.ProcessMouseScroll(yOffset);
 }
