@@ -197,6 +197,9 @@ int main() {
 		lightColor.g = sin(glfwGetTime() * 0.7f);
 		lightColor.b = sin(glfwGetTime() * 1.3f);
 
+		vec3 diffuseColor = lightColor * vec3(0.5f);
+		vec3 ambientColor = diffuseColor * vec3(0.2f);
+
 		// Create camera transformations
 		mat4 view;
 		view = camera.GetViewMatrix();
