@@ -181,7 +181,7 @@ int main() {
 	unsigned char *image;
 
 	// Diffuse map
-	image = SOIL_load_image("res/images/cont2.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("res/img/cont2.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -192,7 +192,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
 	// Specular map
-	image = SOIL_load_image("res/images/cont2_specular.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("res/img/cont2_specular.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
 	glBindTexture(GL_TEXTURE_2D, specularMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -207,19 +207,20 @@ int main() {
 
 	//Game Loop
 	while (!glfwWindowShouldClose(window)) {
-		// Set frame time
+		// Calculate deltatime of current frame
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Check and call events
+		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		glfwPollEvents();
 		DoMovement();
 
-		// Render and Ccear the colorbuffer
+		// Clear the colorbuffer
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
 		GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
@@ -264,28 +265,24 @@ int main() {
 
 		// Also draw the lamp object, again binding the appropriate shader
 		lampShader.Use();
-
-		// Get location objects for the matrices on the lamp shader
+		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
 		modelLoc = glGetUniformLocation(lampShader.Program, "model");
 		viewLoc = glGetUniformLocation(lampShader.Program, "view");
 		projLoc = glGetUniformLocation(lampShader.Program, "projection");
 
-		// Pass the matrices to the shader
+		// Set matrices
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
-
-		// Set matrices
 		model = mat4();
 		model = translate(model, lightPos);
-		model = scale(model, vec3(0.2f));
+		model = scale(model, vec3(0.2f)); // Make it a smaller cube
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-		
 		// Draw the light object (using light's vertex attributes)
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
-		// Sawp the screen buffers
+		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
 
