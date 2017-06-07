@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 // GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -36,8 +37,8 @@ bool firstMouse = true;
 vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 // Deltatime
-GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
+GLfloat deltaTime = 0.0f; // Time between current frame and last frame
+GLfloat lastFrame = 0.0f; // Time of last frame
 
 // The MIAN function, from here we start the application and run the game loop
 int main() {
@@ -78,6 +79,7 @@ int main() {
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+	// OpenGL options
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -189,17 +191,18 @@ int main() {
 	*/
 
 	// Load textures
-	GLuint diffuseMap, specularMap;
+	GLuint diffuseMap, specularMap, emissionMap;;
 	glGenTextures(1, &diffuseMap);
 	glGenTextures(1, &specularMap);
+	glGenTextures(1, &emissionMap);
 
-	int textureWidth, textureHeight;
+	int texWidth, texHeight;
 	unsigned char *image;
 
 	// Diffuse map
-	image = SOIL_load_image("res/img/cont2.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("res/img/cont2.png", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
 	glBindTexture(GL_TEXTURE_2D, diffuseMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -208,9 +211,9 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
 	// Specular map
-	image = SOIL_load_image("res/img/cont2_specular.png", &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("res/img/cont2_specular.png", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
 	glBindTexture(GL_TEXTURE_2D, specularMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -218,6 +221,11 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Set texture units
+	lightingShader.Use();
+	glUniform1i(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 0);
+	glUniform1i(glGetUniformLocation(lightingShader.Program, "material.specular"), 1);
 
 	mat4 projection = perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
 
@@ -314,7 +322,7 @@ int main() {
 	}
 
 	glDeleteVertexArrays(1, &boxVAO);
-	glDeleteVertexArrays(1, &lightVAO);
+	//glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	// Terminate GLWF, clearing any resources allocated by GLFW
