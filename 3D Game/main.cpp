@@ -134,16 +134,16 @@ int main() {
 
 	// Positions all containers
 	vec3 cubePositions[] = {
-		glm::vec3(0.0f,   0.0f,   0.0f),
-		glm::vec3(2.0f,   5.0f,   -15.0f),
-		glm::vec3(-1.5f,  -2.2f,  -2.5f),
-		glm::vec3(-3.8f,  -2.0f,  -12.3f),
-		glm::vec3(2.4f,   -0.4f,  -3.5f),
-		glm::vec3(-1.7f,  3.0f,   -7.5f),
-		glm::vec3(1.3f,   -2.0f,  -2.5f),
-		glm::vec3(1.5f,   2.0f,   -2.5f),
-		glm::vec3(1.5f,   0.2f,   -1.5f),
-		glm::vec3(-1.3f,  1.0f,   -1.5f)
+		vec3(0.0f,   0.0f,   0.0f),
+		vec3(2.0f,   5.0f,   -15.0f),
+		vec3(-1.5f,  -2.2f,  -2.5f),
+		vec3(-3.8f,  -2.0f,  -12.3f),
+		vec3(2.4f,   -0.4f,  -3.5f),
+		vec3(-1.7f,  3.0f,   -7.5f),
+		vec3(1.3f,   -2.0f,  -2.5f),
+		vec3(1.5f,   2.0f,   -2.5f),
+		vec3(1.5f,   0.2f,   -1.5f),
+		vec3(-1.3f,  1.0f,   -1.5f)
 	};
 
 	// First, set the container's VAO (and VBO)
@@ -170,6 +170,7 @@ int main() {
 
 	glBindVertexArray(0); // Unbind VAO
 
+	/*
 	// Then, we set the light's VAO (VBO stays the same)
 	GLuint lightVAO;
 	glGenVertexArrays(1, &lightVAO);
@@ -185,6 +186,7 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	glBindVertexArray(0); // Unbind VAO
+	*/
 
 	// Load textures
 	GLuint diffuseMap, specularMap;
@@ -236,9 +238,11 @@ int main() {
 
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
-		GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
+		//GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
+		GLint lightDirLoc = glGetUniformLocation(lightingShader.Program, "light.direction");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+		//glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(lightDirLoc, -0.2f, 1.0f, -0.3f);
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
 		// Set lights properties
@@ -270,13 +274,21 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-		// Draw the container (using container's vertex attributes)
-		glBindVertexArray(boxVAO);
+		// Draw 10 containers with the same VAO and VBO information; only their world space coordinates differ
 		mat4 model;
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(boxVAO);
+		for (GLint i = 0; i < 10; i++) {
+			model = mat4();
+			model = translate(model, cubePositions[i]);
+
+			GLfloat angle = 20.0f * i;
+			model = rotate(model, angle, vec3(1.0f, 0.3f, 0.5f));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		glBindVertexArray(0);
 
+		/*
 		// Also draw the lamp object, again binding the appropriate shader
 		lampShader.Use();
 		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
@@ -295,6 +307,7 @@ int main() {
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+		*/
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
