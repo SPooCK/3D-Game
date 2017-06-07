@@ -256,7 +256,7 @@ int main() {
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.5f, 0.5f, 0.5f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "light.constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "light.linear"), 0.9f);
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "light.linear"), 0.09f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "light.quadratic"), 0.032f);
 
 		// Set material properties

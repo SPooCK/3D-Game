@@ -16,7 +16,7 @@ struct Light {
 
 	float constant;
 	float linear;
-	float specular;
+	float quadratic;
 };
 
 in vec3 FragPos;

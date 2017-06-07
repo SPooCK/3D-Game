@@ -1,10 +1,10 @@
 ﻿  main.cpp
-d:\programs\vs projects\3d-game\3d game\main.cpp(235): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(233): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(368): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
 d:\programs\vs projects\3d-game\3d game\main.cpp(369): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(370): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(373): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
 d:\programs\vs projects\3d-game\3d game\main.cpp(374): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(375): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(376): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
 d:\programs\vs projects\3d-game\3d game\main.cpp(377): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(378): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
   3D Game.vcxproj -> D:\Programs\VS Projects\3D-Game\Debug\3D Game.exe
   3D Game.vcxproj -> D:\Programs\VS Projects\3D-Game\Debug\3D Game.pdb (Partial PDB)
