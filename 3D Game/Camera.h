@@ -116,6 +116,10 @@ public:
 	vec3 GetPosition() {
 		return this->position;
 	}
+
+	vec3 GetFront() {
+		return this->front;
+	}
 private:
 	// Camera Attributes
 	vec3 position;
