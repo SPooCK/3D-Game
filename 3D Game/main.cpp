@@ -34,7 +34,7 @@ bool keys[1024];
 bool firstMouse = true;
 
 // Light attributes
-vec3 lightPos(1.2f, 1.0f, 2.0f);
+vec3 lightPos(1.2f, 1.0f, -2.0f);
 
 // Deltatime
 GLfloat deltaTime = 0.0f; // Time between current frame and last frame
@@ -229,6 +229,9 @@ int main() {
 
 	//Game Loop
 	while (!glfwWindowShouldClose(window)) {
+		//lightPos.x -= 0.0005f;
+		//lightPos.z -= 0.0005f;
+
 		// Calculate deltatime of current frame
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
