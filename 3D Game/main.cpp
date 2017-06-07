@@ -255,7 +255,9 @@ int main() {
 		GLint lightSpoOuterCutOffLoc = glGetUniformLocation(lightingShader.Program, "light.outerCutOff");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
 		glUniform3f(lightPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
-		glUniform3f(lightPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+		glUniform3f(lightSpotDirLoc, camera.GetFront().x, camera.GetFront().y, camera.GetFront().z);
+		glUniform1f(lightSpoCutOffLoc, cos(radians(12.5f)));
+		glUniform1f(lightSpoOuterCutOffLoc, cos(radians(17.5f)));
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
 		// Set lights properties
