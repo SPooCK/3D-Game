@@ -261,8 +261,8 @@ int main() {
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
 		// Set lights properties
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.2f, 0.2f, 0.2f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.5f, 0.5f, 0.5f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.1f, 0.1f, 0.1f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.8f, 0.8f, 0.8f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "light.constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "light.linear"), 0.09f);
@@ -306,6 +306,7 @@ int main() {
 		}
 		glBindVertexArray(0);
 
+		/*
 		// Also draw the lamp object, again binding the appropriate shader
 		lampShader.Use();
 		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
@@ -324,13 +325,14 @@ int main() {
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+		*/
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
 
 	glDeleteVertexArrays(1, &boxVAO);
-	glDeleteVertexArrays(1, &lightVAO);
+	//glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	// Terminate GLWF, clearing any resources allocated by GLFW
