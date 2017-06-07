@@ -86,7 +86,7 @@ int main() {
 
 	// Build and compile our shader program
 	Shader lightingShader("res/shaders/lighting.vs", "res/shaders/lighting.frag");
-	Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.frag");
+	//Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.frag");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
@@ -172,6 +172,7 @@ int main() {
 
 	glBindVertexArray(0); // Unbind VAO
 
+	/*
 	// Then, we set the light's VAO (VBO stays the same)
 	GLuint lightVAO;
 	glGenVertexArrays(1, &lightVAO);
@@ -187,6 +188,7 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	glBindVertexArray(0); // Unbind VAO
+	*/
 
 	// Load textures
 	GLuint diffuseMap, specularMap, emissionMap;;
@@ -248,10 +250,12 @@ int main() {
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
 		GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
-		//GLint lightDirLoc = glGetUniformLocation(lightingShader.Program, "light.direction");
+		GLint lightSpotDirLoc = glGetUniformLocation(lightingShader.Program, "light.direction");
+		GLint lightSpoCutOffLoc = glGetUniformLocation(lightingShader.Program, "light.cutOff");
+		GLint lightSpoOuterCutOffLoc = glGetUniformLocation(lightingShader.Program, "light.outerCutOff");
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
-		glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-		//glUniform3f(lightDirLoc, -0.2f, 1.0f, -0.3f);
+		glUniform3f(lightPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+		glUniform3f(lightPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
 		// Set lights properties
