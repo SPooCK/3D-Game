@@ -349,7 +349,6 @@ int main() {
 		}
 		glBindVertexArray(0);
 
-		/*
 		// Also draw the lamp object, again binding the appropriate shader
 		lampShader.Use();
 		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
@@ -368,14 +367,24 @@ int main() {
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
-		*/
+
+		// We now draw as many light bulbs as we have point lights.
+		glBindVertexArray(lightVAO);
+		for (GLuint i = 0; i < 4; i++) {
+			model = mat4();
+			model = translate(model, pointLightPositions[i]);
+			model = scale(model, vec3(0.2f)); // Make it a smaller cube
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		glBindVertexArray(0);
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
 
 	glDeleteVertexArrays(1, &boxVAO);
-	//glDeleteVertexArrays(1, &lightVAO);
+	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	// Terminate GLWF, clearing any resources allocated by GLFW

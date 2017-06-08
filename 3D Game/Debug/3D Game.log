@@ -1,10 +1,13 @@
 ﻿  main.cpp
-d:\programs\vs projects\3d-game\3d game\main.cpp(238): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(379): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(380): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(384): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(385): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(387): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(388): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(244): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(431): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(432): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(436): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(437): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(439): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(440): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'D:\Programs\VS Projects\3D-Game\Debug\vc120.pdb'; linking object as if no debug info
   3D Game.vcxproj -> D:\Programs\VS Projects\3D-Game\Debug\3D Game.exe
   3D Game.vcxproj -> D:\Programs\VS Projects\3D-Game\Debug\3D Game.pdb (Partial PDB)
