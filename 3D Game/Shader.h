@@ -85,9 +85,9 @@ public:
 		glUseProgram(this->Program);
 	}
 
+	// Delete program only if successfully created 
 	~Shader() {
-		if (Program != 0) // delete only if successfully created 
-			glDeleteShader(Program); // delete program 
+		if (Program != 0) glDeleteShader(Program);
 	}
 };
 #endif
