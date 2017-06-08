@@ -86,7 +86,7 @@ int main() {
 
 	// Build and compile our shader program
 	Shader lightingShader("res/shaders/lighting.vs", "res/shaders/lighting.frag");
-	//Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.frag");
+	Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.frag");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
@@ -146,6 +146,14 @@ int main() {
 		vec3(1.5f,   2.0f,   -2.5f),
 		vec3(1.5f,   0.2f,   -1.5f),
 		vec3(-1.3f,  1.0f,   -1.5f)
+	};
+
+	// Positions of the point lights
+	vec3 pointLightPositions[] = {
+		glm::vec3(0.7f,  0.2f,  2.0f),
+		glm::vec3(2.3f, -3.3f, -4.0f),
+		glm::vec3(-4.0f,  2.0f, -12.0f),
+		glm::vec3(0.0f,  0.0f, -3.0f)
 	};
 
 	// First, set the container's VAO (and VBO)
