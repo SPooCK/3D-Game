@@ -1,12 +1,35 @@
 // Fragment Shader
 #version 330 core
+
+#define NUMBER_OF_POINT_LIGHTS 4
+
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
     float shininess;
 };
 
-struct Light {
+struct DirLight {
+	vec3 direction;
+    
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+struct PointLight {
+    vec3 position;
+    
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+
+	float constant;
+	float linear;
+	float quadratic;
+};
+
+struct SpotLight {
 	vec3 direction;
     vec3 position;
 	float cutOff;
@@ -29,7 +52,14 @@ out vec4 color;
 
 uniform vec3 viewPos;
 uniform Material material;
-uniform Light light;
+uniform DirLight dirLight;
+uniform PointLight pointLights[NUMBER_OF_POINT_LIGHTS];
+uniform SpotLight spotLight;
+
+// Function prototypes
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
     // Ambient
