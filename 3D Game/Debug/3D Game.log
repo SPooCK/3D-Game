@@ -1,11 +1,14 @@
 ﻿  main.cpp
-d:\programs\vs projects\3d-game\3d game\main.cpp(253): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(448): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(449): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(453): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(454): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(456): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-d:\programs\vs projects\3d-game\3d game\main.cpp(457): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\box.h(23): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\box.h(37): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(318): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(322): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(607): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(608): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(612): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(613): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(615): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+d:\programs\vs projects\3d-game\3d game\main.cpp(616): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
   SOIL2.c
 d:\programs\vs projects\3d-game\3d game\soil2\stbi_dds_c.h(46): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.15063.0\ucrt\stdio.h(207): note: see declaration of 'fopen'

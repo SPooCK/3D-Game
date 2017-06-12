@@ -2,9 +2,6 @@
 
 #include <vector>
 
-#define GLEW_STATIC
-#include <GL/glew.h>
-
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
@@ -119,6 +116,10 @@ public:
 
 	vec3 GetFront() {
 		return this->front;
+	}
+
+	vec3 GetRight() {
+		return this->right;
 	}
 private:
 	// Camera Attributes

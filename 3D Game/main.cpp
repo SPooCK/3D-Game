@@ -11,11 +11,20 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+// irrKlang
+#include <irrKlang.h>
 // Ohter includes
+#include <list> // Using list arrays
+#include <string.h>
 #include "Shader.h"
 #include "Camera.h"
+GLfloat RandomFloat(GLfloat a, GLfloat b);
+#include "Box.h"
+
 
 using namespace glm;
+using namespace irrklang;
+using namespace std;
 
 // Window demensions
 const GLint WIDTH = 800, HEIGHT = 600;
@@ -25,6 +34,11 @@ int SCREEN_WIDTH, SCREEN_HEIGHT;
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
 void MouseCallback(GLFWwindow *window, double xPos, double yPos);
 void DoMovement();
+bool CollisionCheck(vec3 A, vec3 B, GLfloat radius);
+vec3 ReverseMovement(vec3 Pos);
+vec3 CubeMovement(vec3 Pos);
+void BindMapsDiSpe(GLuint diffuseMap, GLuint specularMap, const char* PathD, const char* PathS);
+void CancelMove();
 
 // Camera
 Camera camera(vec3(0.0f, 0.0f, 3.0f));
@@ -37,7 +51,7 @@ bool firstMouse = true;
 vec3 lightPos(1.2f, 1.0f, -2.0f);
 bool drawDir = true;
 bool drawPoint = true;
-bool drawSpot = true;
+bool drawSpot = false;
 
 // Deltatime
 GLfloat deltaTime = 0.0f; // Time between current frame and last frame
@@ -63,9 +77,10 @@ int main() {
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
 	GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "3D Game", monitor, nullptr);
+	//GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "3D Game", nullptr, nullptr);
 
 	if (nullptr == window) {
-		std::cout << "Failed to create GLFW window" << std::endl;
+		cout << "Failed to create GLFW window" << endl;
 		glfwTerminate();
 
 		return EXIT_FAILURE;
@@ -84,7 +99,7 @@ int main() {
 	glewExperimental = GL_TRUE;
 	// Initialize GLEW to setup the OpenGL Function pointers
 	if (GLEW_OK != glewInit()) {
-		std::cout << "Failed to initialise GLEW" << std::endl;
+		cout << "Failed to initialise GLEW" << endl;
 		
 		return EXIT_FAILURE;
 	}
@@ -96,6 +111,10 @@ int main() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// Sound Engine
+	ISoundEngine* engine = createIrrKlangDevice();
+	ISound* music = engine->play2D("res/media/getout.ogg", true);
+
 	// Build and compile our shader program
 	Shader lightingShader("res/shaders/lighting.vs", "res/shaders/lighting.frag");
 	Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.frag");
@@ -103,73 +122,145 @@ int main() {
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
 		// Positions            // Normals              // Texture Coords
-		-0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,     0.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,     1.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,     1.0f,  1.0f,
-		0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,     1.0f,  1.0f,
-		-0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,     0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,     0.0f,  0.0f,
+		-0.25f, -0.25f, -0.25f,    0.0f,  0.0f, -1.0f,     0.0f,  0.0f,
+		0.25f, -0.25f, -0.25f,     0.0f,  0.0f, -1.0f,     1.0f,  0.0f,
+		0.25f,  0.25f, -0.25f,     0.0f,  0.0f, -1.0f,     1.0f,  1.0f,
+		0.25f,  0.25f, -0.25f,     0.0f,  0.0f, -1.0f,     1.0f,  1.0f,
+		-0.25f,  0.25f, -0.25f,    0.0f,  0.0f, -1.0f,     0.0f,  1.0f,
+		-0.25f, -0.25f, -0.25f,    0.0f,  0.0f, -1.0f,     0.0f,  0.0f,
 
-		-0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,     0.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,     1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,     1.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,  	1.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,     0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,     0.0f,  0.0f,
+		-0.25f, -0.25f,  0.25f,    0.0f,  0.0f,  1.0f,     0.0f,  0.0f,
+		0.25f, -0.25f,  0.25f,     0.0f,  0.0f,  1.0f,     1.0f,  0.0f,
+		0.25f,  0.25f,  0.25f,     0.0f,  0.0f,  1.0f,     1.0f,  1.0f,
+		0.25f,  0.25f,  0.25f,     0.0f,  0.0f,  1.0f,  	1.0f,  1.0f,
+		-0.25f,  0.25f,  0.25f,    0.0f,  0.0f,  1.0f,     0.0f,  1.0f,
+		-0.25f, -0.25f,  0.25f,    0.0f,  0.0f,  1.0f,     0.0f,  0.0f,
 
-		-0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,    1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,    1.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,    0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,    0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,    0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,    1.0f,  0.0f,
+		-0.25f,  0.25f,  0.25f,    -1.0f,  0.0f,  0.0f,    1.0f,  0.0f,
+		-0.25f,  0.25f, -0.25f,    -1.0f,  0.0f,  0.0f,    1.0f,  1.0f,
+		-0.25f, -0.25f, -0.25f,    -1.0f,  0.0f,  0.0f,    0.0f,  1.0f,
+		-0.25f, -0.25f, -0.25f,    -1.0f,  0.0f,  0.0f,    0.0f,  1.0f,
+		-0.25f, -0.25f,  0.25f,    -1.0f,  0.0f,  0.0f,    0.0f,  0.0f,
+		-0.25f,  0.25f,  0.25f,    -1.0f,  0.0f,  0.0f,    1.0f,  0.0f,
 
-		0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,     1.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,     1.0f,  0.0f,  0.0f,     1.0f,  1.0f,
-		0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,     0.0f,  1.0f,
-		0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,     0.0f,  1.0f,
-		0.5f, -0.5f,  0.5f,     1.0f,  0.0f,  0.0f,     0.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,     1.0f,  0.0f,
+		0.25f,  0.25f,  0.25f,     1.0f,  0.0f,  0.0f,     1.0f,  0.0f,
+		0.25f,  0.25f, -0.25f,     1.0f,  0.0f,  0.0f,     1.0f,  1.0f,
+		0.25f, -0.25f, -0.25f,     1.0f,  0.0f,  0.0f,     0.0f,  1.0f,
+		0.25f, -0.25f, -0.25f,     1.0f,  0.0f,  0.0f,     0.0f,  1.0f,
+		0.25f, -0.25f,  0.25f,     1.0f,  0.0f,  0.0f,     0.0f,  0.0f,
+		0.25f,  0.25f,  0.25f,     1.0f,  0.0f,  0.0f,     1.0f,  0.0f,
 
-		-0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,     0.0f,  1.0f,
-		0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,     1.0f,  1.0f,
-		0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,     1.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,     1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,     0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,     0.0f,  1.0f,
+		-0.25f, -0.25f, -0.25f,    0.0f, -1.0f,  0.0f,     0.0f,  1.0f,
+		0.25f, -0.25f, -0.25f,     0.0f, -1.0f,  0.0f,     1.0f,  1.0f,
+		0.25f, -0.25f,  0.25f,     0.0f, -1.0f,  0.0f,     1.0f,  0.0f,
+		0.25f, -0.25f,  0.25f,     0.0f, -1.0f,  0.0f,     1.0f,  0.0f,
+		-0.25f, -0.25f,  0.25f,    0.0f, -1.0f,  0.0f,     0.0f,  0.0f,
+		-0.25f, -0.25f, -0.25f,    0.0f, -1.0f,  0.0f,     0.0f,  1.0f,
 
-		-0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f,
-		0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,     1.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,     1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,     1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,     0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f
+		-0.25f,  0.25f, -0.25f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f,
+		0.25f,  0.25f, -0.25f,     0.0f,  1.0f,  0.0f,     1.0f,  1.0f,
+		0.25f,  0.25f,  0.25f,     0.0f,  1.0f,  0.0f,     1.0f,  0.0f,
+		0.25f,  0.25f,  0.25f,     0.0f,  1.0f,  0.0f,     1.0f,  0.0f,
+		-0.25f,  0.25f,  0.25f,    0.0f,  1.0f,  0.0f,     0.0f,  0.0f,
+		-0.25f,  0.25f, -0.25f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f
 	};
 
-	// Positions all containers
-	vec3 cubePositions[] = {
-		vec3(0.0f,   0.0f,   0.0f),
-		vec3(2.0f,   5.0f,   -15.0f),
-		vec3(-1.5f,  -2.2f,  -2.5f),
-		vec3(-3.8f,  -2.0f,  -12.3f),
-		vec3(2.4f,   -0.4f,  -3.5f),
-		vec3(-1.7f,  3.0f,   -7.5f),
-		vec3(1.3f,   -2.0f,  -2.5f),
-		vec3(1.5f,   2.0f,   -2.5f),
-		vec3(1.5f,   0.2f,   -1.5f),
-		vec3(-1.3f,  1.0f,   -1.5f)
+	GLfloat mapVertices[] = {
+		// Positions            // Normals              // Texture Coords
+		-20.0f, -20.0f, -20.0f,    0.0f,  0.0f, -1.0f,     0.0f,  0.0f,
+		20.0f, -20.0f, -20.0f,     0.0f,  0.0f, -1.0f,     1.0f,  0.0f,
+		20.0f, 20.0f, -20.0f,     0.0f,  0.0f, -1.0f,     1.0f,  1.0f,
+		20.0f,  20.0f, -20.0f,     0.0f,  0.0f, -1.0f,     1.0f,  1.0f,
+		-20.0f,  20.0f, -20.0f,    0.0f,  0.0f, -1.0f,     0.0f,  1.0f,
+		-20.0f, -20.0f, -20.0f,    0.0f,  0.0f, -1.0f,     0.0f,  0.0f,
+
+		-20.0f, -20.0f, 20.0f,    0.0f,  0.0f,  1.0f,     0.0f,  0.0f,
+		20.0f, -20.0f,  20.0f,     0.0f,  0.0f,  1.0f,     1.0f,  0.0f,
+		20.0f,  20.0f,  20.0f,     0.0f,  0.0f,  1.0f,     1.0f,  1.0f,
+		20.0f, 20.0f, 20.0f,     0.0f,  0.0f,  1.0f,  	1.0f,  1.0f,
+		-20.0f,  20.0f,  20.0f,    0.0f,  0.0f,  1.0f,     0.0f,  1.0f,
+		-20.0f, -20.0f,  20.0f,    0.0f,  0.0f,  1.0f,     0.0f,  0.0f,
+
+		-20.0f,  20.0f, 20.0f,    -1.0f,  0.0f,  0.0f,    1.0f,  0.0f,
+		-20.0f, 20.0f, -20.0f,    -1.0f,  0.0f,  0.0f,    1.0f,  1.0f,
+		-20.0f, -20.0f, -20.0f,    -1.0f,  0.0f,  0.0f,    0.0f,  1.0f,
+		-20.0f, -20.0f, -20.0f,    -1.0f,  0.0f,  0.0f,    0.0f,  1.0f,
+		-20.0f, -20.0f,  20.0f,    -1.0f,  0.0f,  0.0f,    0.0f,  0.0f,
+		-20.0f,  20.0f,  20.0f,    -1.0f,  0.0f,  0.0f,    1.0f,  0.0f,
+
+		20.0f, 20.0f,  20.0f,     1.0f,  0.0f,  0.0f,     1.0f,  0.0f,
+		20.0f, 20.0f, -20.0f,     1.0f,  0.0f,  0.0f,     1.0f,  1.0f,
+		20.0f, -20.0f, -20.0f,     1.0f,  0.0f,  0.0f,     0.0f,  1.0f,
+		20.0f, -20.0f, -20.0f,     1.0f,  0.0f,  0.0f,     0.0f,  1.0f,
+		20.0f, -20.0f,  20.0f,     1.0f,  0.0f,  0.0f,     0.0f,  0.0f,
+		20.0f,  20.0f,  20.0f,     1.0f,  0.0f,  0.0f,     1.0f,  0.0f,
+
+		-20.0f, -20.0f, -20.0f,    0.0f, -1.0f,  0.0f,     0.0f,  1.0f,
+		20.0f, -20.0f, -20.0f,     0.0f, -1.0f,  0.0f,     1.0f,  1.0f,
+		20.0f, -20.0f,  20.0f,     0.0f, -1.0f,  0.0f,     1.0f,  0.0f,
+		20.0f, -20.0f,  20.0f,     0.0f, -1.0f,  0.0f,     1.0f,  0.0f,
+		-20.0f, -20.0f,  20.0f,    0.0f, -1.0f,  0.0f,     0.0f,  0.0f,
+		-20.0f, -20.0f, -20.0f,    0.0f, -1.0f,  0.0f,     0.0f,  1.0f,
+
+		-20.0f,  20.0f, -20.0f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f,
+		20.0f,  20.0f, -20.0f,     0.0f,  1.0f,  0.0f,     1.0f,  1.0f,
+		20.0f,  20.0f,  20.0f,     0.0f,  1.0f,  0.0f,     1.0f,  0.0f,
+		20.0f,  20.0f,  20.0f,     0.0f,  1.0f,  0.0f,     1.0f,  0.0f,
+		-20.0f,  20.0f,  20.0f,    0.0f,  1.0f,  0.0f,     0.0f,  0.0f,
+		-20.0f,  20.0f, -20.0f,    0.0f,  1.0f,  0.0f,     0.0f,  1.0f
 	};
+
+	// Position map boxe
+	Box* Map = new Box();
+
+	// Position all boxes
+	list<Box*> Boxes;
+	for (GLint i = 0; i < 100; i++) {
+		Box* nBox = new Box();
+		GLfloat x = RandomFloat(-15.0f, 15.0f);
+		GLfloat y = RandomFloat(-15.0f, 15.0f);
+		GLfloat z = RandomFloat(-15.0f, 15.0f);
+		nBox->pos = vec3(x, y, z);
+		Boxes.push_back(nBox);
+	}
 
 	// Positions of the point lights
-	vec3 pointLightPositions[] = {
-		vec3(0.7f,  0.2f,  2.0f),
-		vec3(2.3f, -3.3f, -4.0f),
-		vec3(-4.0f,  2.0f, -12.0f),
-		vec3(0.0f,  0.0f, -3.0f)
-	};
+	list<Box*> Lights;
+	for (GLint i = 0; i < 50; i++) {
+		Box* nBox = new Box();
+		GLfloat x = RandomFloat(-15.0f, 15.0f);
+		GLfloat y = RandomFloat(-15.0f, 15.0f);
+		GLfloat z = RandomFloat(-15.0f, 15.0f);
+		nBox->pos = vec3(x, y, z);
+		Lights.push_back(nBox);
+	}
+
+	// Set the Map VAO (and VBO)
+	GLuint VBO, mapVAO;
+	glGenVertexArrays(1, &mapVAO);
+	glGenBuffers(1, &VBO);
+
+	// Bind the Vertex Array Object first, then bind and set the vertex buffer(s) and attribute pointer(s)
+	glBindVertexArray(mapVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(mapVertices), mapVertices, GL_STATIC_DRAW);
+
+	// Position Attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)0);
+	glEnableVertexAttribArray(0);
+
+	// Normal Attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	// Texture Attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(0); // Unbind VAO
 
 	// First, set the container's VAO (and VBO)
-	GLuint VBO, boxVAO;
+	GLuint boxVAO;
 	glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &VBO);
 
@@ -183,11 +274,11 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	// Normal Attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *) (3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
-	
+
 	// Texture Attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *) (6 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0); // Unbind VAO
@@ -209,36 +300,13 @@ int main() {
 	glBindVertexArray(0); // Unbind VAO
 
 	// Load textures
-	GLuint diffuseMap, specularMap, emissionMap;;
-	glGenTextures(1, &diffuseMap);
-	glGenTextures(1, &specularMap);
+	GLuint diffuseMap, specularMap, emissionMap, diffuseMapM, specularMapM;
+	glGenTextures(1, &diffuseMap); glGenTextures(1, &diffuseMapM);
+	glGenTextures(1, &specularMap); glGenTextures(1, &specularMapM);
 	glGenTextures(1, &emissionMap);
 
-	int texWidth, texHeight;
-	unsigned char *image;
-
-	// Diffuse map
-	image = SOIL_load_image("res/img/cont2.png", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, diffuseMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-
-	// Specular map
-	image = SOIL_load_image("res/img/cont2_specular.png", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, specularMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	BindMapsDiSpe(diffuseMap, specularMap, "res/img/box.png", "res/img/box_spec.png");
+	BindMapsDiSpe(diffuseMapM, specularMapM, "res/img/metal.png", "res/img/metal_spec.png");
 
 	// Set texture units
 	lightingShader.Use();
@@ -247,6 +315,7 @@ int main() {
 
 	mat4 projection = perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
 
+	GLfloat End = glfwGetTime() + 2.0f;
 	//Game Loop
 	while (!glfwWindowShouldClose(window)) {
 		// Calculate deltatime of current frame
@@ -269,49 +338,26 @@ int main() {
 		// Set material properties
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 32.0f);
 
-		float lDiff = drawDir ? 0.4f : 0;
+		float lDiff = drawDir ? 1.0f : 0;
 		// Directional light
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.ambient"), 0.05f, 0.05f, 0.05f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.diffuse"), lDiff, lDiff, lDiff);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.specular"), 0.5f, 0.5f, 0.5f);
 
-		lDiff = drawPoint ? 0.8f : 0;
-		// Point light 1
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].diffuse"), lDiff, lDiff, lDiff);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].quadratic"), 0.032f);
-
-		// Point light 2
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].diffuse"), lDiff, lDiff, lDiff);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].quadratic"), 0.032f);
-
-		// Point light 3
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].position"), pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].diffuse"), lDiff, lDiff, lDiff);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[2].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[2].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[2].quadratic"), 0.032f);
-
-		// Point light 4
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].position"), pointLightPositions[3].x, pointLightPositions[3].y, pointLightPositions[3].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].diffuse"), lDiff, lDiff, lDiff);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].quadratic"), 0.032f);
+		int L = 0; lDiff = drawPoint ? 0.8f : 0;
+		for (list<Box*>::iterator it = Lights.begin(); it != Lights.end(); it++) {
+			// Point Lights
+			glBindVertexArray(lightVAO);
+			glUniform3f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].position").c_str()), (*it)->pos.x, (*it)->pos.y, (*it)->pos.z);
+			glUniform3f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].ambient").c_str()), 0.05f, 0.05f, 0.05f);
+			glUniform3f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].diffuse").c_str()), lDiff, lDiff, lDiff);
+			glUniform3f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].specular").c_str()), 1.0f, 1.0f, 1.0f);
+			glUniform1f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].constant").c_str()), 1.0f);
+			glUniform1f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].linear").c_str()), 0.09f);
+			glUniform1f(glGetUniformLocation(lightingShader.Program, ("pointLights[" + to_string(L) + "].quadratic").c_str()), 0.032f);
+			L++;
+		}
 
 		lDiff = drawSpot ? 1.0f : 0;
 		// SpotLight
@@ -339,27 +385,69 @@ int main() {
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, value_ptr(projection));
 
-		// Bind diffuse map
+		// Bind Map diffuse map
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMapM);
+
+		// Bind Map specular map
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMapM);
+
+		// Draw Map container with the same VAO and VBO information
+		glBindVertexArray(mapVAO);
+		mat4 model = mat4();
+		model = translate(model, Map->pos);
+
+		Map->angle = (GLfloat)glfwGetTime() * -0.05f;
+		GLfloat angle = Map->angle;
+		model = rotate(model, angle, vec3(1.0f, 0.3f, 0.5f));
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindVertexArray(0);
+
+		// Bind Box diffuse map
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
-		// Bind specular map
+		// Bind Box specular map
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
 
-		// Draw 10 containers with the same VAO and VBO information; only their world space coordinates differ
-		mat4 model;
+		// Draw box containers with the same VAO and VBO information
 		glBindVertexArray(boxVAO);
-		for (GLint i = 0; i < 10; i++) {
+		for (list<Box*>::iterator it = Boxes.begin(); it != Boxes.end(); it++) {
 			model = mat4();
-			model = translate(model, cubePositions[i]);
-			model = rotate(model, (GLfloat)glfwGetTime() * -0.5f, vec3(0.0f, 0.0f, 1.0f)); // Give it a spin
+			if ((*it)->CanJump() && CollisionCheck(camera.GetPosition(), (*it)->pos, 1.75f)) {
+				(*it)->Jump(); (*it)->pCatch = false;
+				engine->play2D("res/media/beep.wav");
+			} else if (CollisionCheck(camera.GetPosition(), (*it)->pos, 0.75f)) {
+				if (currentFrame >= End) {
+					engine->play2D("res/media/drag.flac");
+					End = currentFrame + 2.0f;
+				}
+				(*it)->pos = ReverseMovement((*it)->pos);
+				(*it)->angle += 0.005f; (*it)->pCatch = true;
+				for (list<Box*>::iterator it2 = Boxes.begin(); it2 != Boxes.end(); it2++) {
+					if ((*it2) != (*it) && CollisionCheck((*it)->pos, (*it2)->pos, 0.75f)) {
+						(*it2)->pos = CubeMovement((*it2)->pos);
+						(*it2)->angle += 0.005f;
+					}
+				}
+			} else if ((*it)->pCatch) {
+				(*it)->pCatch = false;
+			}
 
-			GLfloat angle = 20.0f * i;
+			model = translate(model, (*it)->pos);
+
+			angle = (*it)->angle;
 			model = rotate(model, angle, vec3(1.0f, 0.3f, 0.5f));
+
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
 		glBindVertexArray(0);
 
 		// Also draw the lamp object, again binding the appropriate shader
@@ -376,9 +464,9 @@ int main() {
 		// Draw the light object (using light's vertex attributes)
 		// We now draw as many light bulbs as we have point lights.
 		glBindVertexArray(lightVAO);
-		for (GLuint i = 0; i < 4; i++) {
+		for (list<Box*>::iterator it = Lights.begin(); it != Lights.end(); it++) {
 			model = mat4();
-			model = translate(model, pointLightPositions[i]);
+			model = translate(model, (*it)->pos);
 			model = scale(model, vec3(0.2f)); // Make it a smaller cube
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -389,6 +477,7 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 
+	engine->drop();
 	glDeleteVertexArrays(1, &boxVAO);
 	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
@@ -415,6 +504,76 @@ void DoMovement() {
 	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT]) {
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 	}
+}
+
+vec3 ReverseMovement(vec3 Pos) {
+	GLfloat velocity = 3.0f * deltaTime;
+	vec3 front = camera.GetFront();
+	vec3 right = camera.GetRight();
+
+	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP]) {
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		Pos += front * velocity;
+	}
+
+	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN]) {
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+		Pos -= front * velocity;
+	}
+
+	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT]) {
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+		Pos -= right * velocity;
+	}
+
+	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT]) {
+		camera.ProcessKeyboard(LEFT, deltaTime);
+		Pos += right * velocity;
+	}
+
+	return Pos;
+}
+
+void CancelMove() {
+	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP]) {
+		keys[GLFW_KEY_W] = false; keys[GLFW_KEY_UP] = false;
+	}
+
+	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN]) {
+		keys[GLFW_KEY_S] = false; keys[GLFW_KEY_DOWN] = false;
+	}
+
+	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT]) {
+		keys[GLFW_KEY_A] = false; keys[GLFW_KEY_LEFT] = false;
+	}
+
+	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT]) {
+		keys[GLFW_KEY_D] = false; keys[GLFW_KEY_RIGHT] = false;
+	}
+}
+
+vec3 CubeMovement(vec3 Pos) {
+	GLfloat velocity = 3.0f * deltaTime;
+	vec3 front = camera.GetFront();
+	vec3 right = camera.GetRight();
+
+	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP]) {
+		Pos += front * velocity;
+	}
+
+	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN]) {
+		Pos -= front * velocity;
+	}
+
+	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT]) {
+		Pos -= right * velocity;
+	}
+
+	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT]) {
+		Pos += right * velocity;
+	}
+
+	return Pos;
 }
 
 void OnKeyPress() {
@@ -457,4 +616,42 @@ void MouseCallback(GLFWwindow *window, double xPos, double yPos) {
 	lastY = yPos;
 
 	camera.ProcessMouseMovement(xOffset, yOffset);
+}
+
+bool CollisionCheck(vec3 A, vec3 B, GLfloat radius) {
+	GLfloat dx = A.x - B.x;
+	GLfloat dy = A.y - B.y;
+	GLfloat dz = A.z - B.z;
+	GLfloat distance = sqrt(dx*dx + dy*dy + dz*dz);
+
+	return (distance <= radius);
+}
+
+
+void BindMapsDiSpe(GLuint diffuseMap, GLuint specularMap, const char* PathD, const char* PathS) {
+	int texWidth, texHeight;
+	unsigned char *image;
+
+	// Diffuse Map
+	image = SOIL_load_image(PathD, &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
+	glBindTexture(GL_TEXTURE_2D, diffuseMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+
+	// Specular Map
+	image = SOIL_load_image(PathS, &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
+	glBindTexture(GL_TEXTURE_2D, specularMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
